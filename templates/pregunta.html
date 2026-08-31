@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Pregunta {{ numero }} - Orientación Vocacional UNNE
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+    <main class="cuestionario-contenedor">
+
+        <section class="cuestionario-tarjeta">
+
+            <div class="progreso">
+
+                <p>
+                    Pregunta {{ numero }} de {{ total }}
+                </p>
+
+                <div class="barra-progreso">
+
+                    <div
+                        class="progreso-actual"
+                        style="width: {{ (numero / total) * 100 }}%;">
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <h1>Cuestionario vocacional</h1>
+
+
+            <div class="pregunta-principal">
+
+                <p>
+                    {{ pregunta.texto }}
+                </p>
+
+            </div>
+
+
+            <form method="POST">
+
+                <label class="opcion">
+
+                    <input
+                        type="radio"
+                        name="respuesta"
+                        value="1"
+                        required>
+
+                    Muy en desacuerdo
+
+                </label>
+
+
+                <label class="opcion">
+
+                    <input
+                        type="radio"
+                        name="respuesta"
+                        value="2">
+
+                    En desacuerdo
+
+                </label>
+
+
+                <label class="opcion">
+
+                    <input
+                        type="radio"
+                        name="respuesta"
+                        value="3">
+
+                    Ni de acuerdo ni en desacuerdo
+
+                </label>
+
+
+                <label class="opcion">
+
+                    <input
+                        type="radio"
+                        name="respuesta"
+                        value="4">
+
+                    De acuerdo
+
+                </label>
+
+
+                <label class="opcion">
+
+                    <input
+                        type="radio"
+                        name="respuesta"
+                        value="5">
+
+                    Muy de acuerdo
+
+                </label>
+
+
+                <button type="submit" class="boton">
+
+                    {% if numero == total %}
+
+                        Finalizar cuestionario
+
+                    {% else %}
+
+                        Siguiente →
+
+                    {% endif %}
+
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

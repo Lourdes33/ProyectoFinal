@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cuestionario - Orientación Vocacional UNNE</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <main class="cuestionario-contenedor">
+
+        <section class="cuestionario-tarjeta">
+
+            <div class="progreso">
+                <p>Paso 1 de 2</p>
+
+                <div class="barra-progreso">
+                    <div class="progreso-actual"></div>
+                </div>
+            </div>
+
+            <h1>Antes de comenzar</h1>
+
+            <p class="descripcion">
+                Para poder considerar la ubicación de las distintas sedes de la
+                Universidad Nacional del Nordeste, necesitamos conocer algunos
+                datos generales.
+            </p>
+
+            <form method="POST">
+
+                <div class="grupo-pregunta">
+
+                    <label for="provincia">
+                        ¿En qué provincia residís actualmente?
+                    </label>
+
+                    <select id="provincia" name="provincia" required>
+
+                        <option value="">
+                            Seleccioná una provincia
+                        </option>
+
+                        <option value="Buenos Aires">
+                            Buenos Aires
+                        </option>
+
+                        <option value="Chaco">
+                            Chaco
+                        </option>
+
+                        <option value="Corrientes">
+                            Corrientes
+                        </option>
+
+                        <option value="Formosa">
+                            Formosa
+                        </option>
+
+                        <option value="Misiones">
+                            Misiones
+                        </option>
+
+                        <option value="Santa Fe">
+                            Santa Fe
+                        </option>
+
+                        <option value="Otra">
+                            Otra provincia
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="grupo-pregunta">
+
+                    <p class="pregunta">
+                        ¿Estarías dispuesto/a a trasladarte a otra ciudad o
+                        provincia para estudiar?
+                    </p>
+
+                    <label class="opcion">
+
+                        <input
+                            type="radio"
+                            name="traslado"
+                            value="si"
+                            required>
+
+                        Sí, estoy dispuesto/a a trasladarme.
+
+                    </label>
+
+
+                    <label class="opcion">
+
+                        <input
+                            type="radio"
+                            name="traslado"
+                            value="depende">
+
+                        Depende de la carrera y las condiciones.
+
+                    </label>
+
+
+                    <label class="opcion">
+
+                        <input
+                            type="radio"
+                            name="traslado"
+                            value="no">
+
+                        No, preferiría estudiar cerca de mi lugar de residencia.
+
+                    </label>
+
+                </div>
+
+
+                <button type="submit" class="boton">
+
+                    Continuar
+
+                </button>
+
+            </form>
+
+            <a href="/" class="volver">
+                ← Volver al inicio
+            </a>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>
