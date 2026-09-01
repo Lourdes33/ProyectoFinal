@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Sección {{ numero }} - Orientación Vocacional UNNE
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+    <main class="cuestionario-contenedor">
+
+        <section class="cuestionario-tarjeta">
+
+            <!-- PROGRESO -->
+
+            <div class="progreso">
+
+                <p>
+                    Sección {{ numero }} de {{ total_secciones }}
+                </p>
+
+                <div class="barra-progreso">
+
+                    <div
+                        class="progreso-actual"
+                        style="width: {{ (numero / total_secciones) * 100 }}%;">
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TÍTULO DE LA SECCIÓN -->
+
+            <div class="encabezado-seccion">
+
+                <p class="letra-seccion">
+                    SECCIÓN {{ seccion.letra }}
+                </p>
+
+                <h1>
+                    {{ seccion.titulo }}
+                </h1>
+
+                <p class="descripcion">
+                    {{ seccion.descripcion }}
+                </p>
+
+                {% if seccion.escala_descripcion %}
+
+                    <p class="descripcion-escala">
+                        {{ seccion.escala_descripcion }}
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- FORMULARIO -->
+
+            <form method="POST">
+
+                {% for pregunta in seccion.preguntas %}
+
+                    <div class="pregunta-bloque">
+
+                        <p class="texto-pregunta">
+
+                            {{ pregunta.id }}.
+                            {{ pregunta.texto }}
+
+                        </p>
+
+
+                        <!-- SELECT -->
+
+                        {% if pregunta.tipo == "select" %}
+
+                            <select
+                                name="pregunta_{{ pregunta.id }}"
+                                required>
+
+                                <option value="">
+                                    Seleccioná una opción
+                                </option>
+
+                                {% for opcion in pregunta.opciones %}
+
+                                    <option value="{{ opcion }}">
+
+                                        {{ opcion }}
+
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+
+                        <!-- RADIO -->
+
+                        {% elif pregunta.tipo == "radio" %}
+
+                            <div class="opciones">
+
+                                {% for opcion in pregunta.opciones %}
+
+                                    <label class="opcion">
+
+                                        <input
+                                            type="radio"
+                                            name="pregunta_{{ pregunta.id }}"
+                                            value="{{ opcion }}"
+                                            required>
+
+                                        {{ opcion }}
+
+                                    </label>
+
+                                {% endfor %}
+
+                            </div>
+
+                        <!-- CHECKBOX -->
+
+                        {% elif pregunta.tipo == "checkbox" %}
+
+                            <div class="opciones">
+
+                                {% for opcion in pregunta.opciones %}
+
+                                    <label class="opcion">
+
+                                        <input
+                                            type="checkbox"
+                                            name="pregunta_{{ pregunta.id }}"
+                                            value="{{ opcion }}">
+
+                                        {{ opcion }}
+
+                                    </label>
+
+                                {% endfor %}
+
+                            </div>
+
+                            
+                        <!-- ESCALA DEL 1 AL 5 -->
+
+                        {% elif pregunta.tipo == "escala" %}
+
+                            <div class="escala">
+
+                                {% for valor in range(1, 6) %}
+
+                                    <label class="opcion-escala">
+
+                                        <input
+                                            type="radio"
+                                            name="pregunta_{{ pregunta.id }}"
+                                            value="{{ valor }}"
+                                            required>
+
+                                        <span>
+                                            {{ valor }}
+                                        </span>
+
+                                    </label>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+
+                <!-- BOTÓN -->
+
+                <button
+                    type="submit"
+                    class="boton boton-continuar">
+
+                    {% if numero == total_secciones %}
+
+                        Finalizar cuestionario
+
+                    {% else %}
+
+                        Continuar →
+
+                    {% endif %}
+
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

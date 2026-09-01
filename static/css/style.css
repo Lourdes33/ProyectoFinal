@@ -268,3 +268,110 @@ select {
 
     cursor: pointer;
 }
+
+/* ========================================
+   SECCIONES DEL CUESTIONARIO
+======================================== */
+
+.encabezado-seccion {
+    margin-bottom: 35px;
+}
+
+.letra-seccion {
+    font-size: 14px;
+    font-weight: bold;
+
+    color: #2563eb;
+
+    margin-bottom: 8px;
+
+    letter-spacing: 1px;
+}
+
+.descripcion-escala {
+    margin-top: 15px;
+
+    padding: 12px;
+
+    background: #f8fafc;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+}
+
+
+/* BLOQUE DE PREGUNTAS */
+
+.pregunta-bloque {
+    padding: 25px 0;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.texto-pregunta {
+    font-size: 18px;
+
+    font-weight: bold;
+
+    margin-bottom: 20px;
+
+    line-height: 1.5;
+}
+
+
+/* OPCIONES */
+
+.opciones {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+/* ESCALA */
+
+.escala {
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+}
+
+.opcion-escala {
+    flex: 1;
+
+    min-width: 50px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 15px;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.opcion-escala input {
+    margin-right: 8px;
+}
+
+.opcion-escala:hover {
+    background: #f8fafc;
+}
+
+
+/* BOTÓN */
+
+.boton-continuar {
+    margin-top: 35px;
+}
