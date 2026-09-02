@@ -80,7 +80,7 @@
 
                         <p class="texto-pregunta">
 
-                            {{ pregunta.id }}.
+                            {{ pregunta.id_pregunta }}.
                             {{ pregunta.texto }}
 
                         </p>
@@ -91,7 +91,7 @@
                         {% if pregunta.tipo == "select" %}
 
                             <select
-                                name="pregunta_{{ pregunta.id }}"
+                                name="pregunta_{{ pregunta.id_pregunta }}"
                                 required>
 
                                 <option value="">
@@ -100,9 +100,9 @@
 
                                 {% for opcion in pregunta.opciones %}
 
-                                    <option value="{{ opcion }}">
+                                    <option value="{{ opcion.valor }}">
 
-                                        {{ opcion }}
+                                        {{ opcion.texto }}
 
                                     </option>
 
@@ -123,17 +123,18 @@
 
                                         <input
                                             type="radio"
-                                            name="pregunta_{{ pregunta.id }}"
-                                            value="{{ opcion }}"
+                                            name="pregunta_{{ pregunta.id_pregunta }}"
+                                            value="{{ opcion.valor }}"
                                             required>
 
-                                        {{ opcion }}
+                                        {{ opcion.texto }}
 
                                     </label>
 
                                 {% endfor %}
 
                             </div>
+
 
                         <!-- CHECKBOX -->
 
@@ -147,10 +148,10 @@
 
                                         <input
                                             type="checkbox"
-                                            name="pregunta_{{ pregunta.id }}"
-                                            value="{{ opcion }}">
+                                            name="pregunta_{{ pregunta.id_pregunta }}"
+                                            value="{{ opcion.valor }}">
 
-                                        {{ opcion }}
+                                        {{ opcion.texto }}
 
                                     </label>
 
@@ -158,7 +159,7 @@
 
                             </div>
 
-                            
+
                         <!-- ESCALA DEL 1 AL 5 -->
 
                         {% elif pregunta.tipo == "escala" %}
@@ -171,7 +172,7 @@
 
                                         <input
                                             type="radio"
-                                            name="pregunta_{{ pregunta.id }}"
+                                            name="pregunta_{{ pregunta.id_pregunta }}"
                                             value="{{ valor }}"
                                             required>
 

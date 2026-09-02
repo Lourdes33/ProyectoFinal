@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 
-from preguntas import SECCIONES
+from database import (
+    obtener_secciones,
+    obtener_cuestionario_seccion
+)
 
 
 app = Flask(__name__)
@@ -8,64 +11,112 @@ app = Flask(__name__)
 app.secret_key = "clave_secreta_temporal_para_desarrollo"
 
 
+
+# ==========================================
+# PÁGINA DE INICIO
+# ==========================================
+
 @app.route("/")
 def inicio():
+
     return render_template("index.html")
 
+
+# ==========================================
+# INICIO DEL CUESTIONARIO
+# ==========================================
 
 @app.route("/cuestionario")
 def cuestionario():
 
-        # Reiniciamos las respuestas del cuestionario
-        session["respuestas"] = {}
+    # Reiniciamos las respuestas del cuestionario
+    session["respuestas"] = {}
 
-        # Comenzamos con la primera sección
-        return redirect(url_for("seccion", numero=1))
+    # Comenzamos con la primera sección
+    return redirect(
+        url_for(
+            "seccion",
+            numero=1
+        )
+    )
 
 
+# ==========================================
+# SECCIONES DEL CUESTIONARIO
+# ==========================================
 
 @app.route("/seccion/<int:numero>", methods=["GET", "POST"])
 def seccion(numero):
 
-    # Evitamos acceder a una sección inexistente
-    if numero < 1 or numero > len(SECCIONES):
-        return redirect(url_for("inicio"))
+    # Obtenemos todas las secciones
+    secciones = obtener_secciones()
 
-    seccion_actual = SECCIONES[numero - 1]
+    total_secciones = len(secciones)
+
+    # Evitamos acceder a una sección inexistente
+    if numero < 1 or numero > total_secciones:
+
+        return redirect(
+            url_for("inicio")
+        )
+
+    # Obtenemos la sección completa
+    seccion_actual = obtener_cuestionario_seccion(numero)
+
+    # Si no existe la sección
+    if seccion_actual is None:
+
+        return redirect(
+            url_for("inicio")
+        )
+
+    # ======================================
+    # GUARDAR RESPUESTAS
+    # ======================================
 
     if request.method == "POST":
 
-        # Recuperamos las respuestas guardadas
-        respuestas = session.get("respuestas", {})
+        # Recuperamos las respuestas anteriores
+        respuestas = session.get(
+            "respuestas",
+            {}
+        )
 
         # Guardamos las respuestas de todas las preguntas
         # de la sección actual
-        
         for pregunta in seccion_actual["preguntas"]:
 
-            id_pregunta = str(pregunta["id"])
+            id_pregunta = str(
+                pregunta["id_pregunta"]
+            )
 
             nombre_campo = f"pregunta_{id_pregunta}"
 
-            # Si permite seleccionar varias opciones
+            # Preguntas con múltiples respuestas
             if pregunta["tipo"] == "checkbox":
 
-                respuesta = request.form.getlist(nombre_campo)
+                respuesta = request.form.getlist(
+                    nombre_campo
+                )
 
-            # Para preguntas con una sola respuesta
+            # Preguntas con una sola respuesta
             else:
 
-                respuesta = request.form.get(nombre_campo)
+                respuesta = request.form.get(
+                    nombre_campo
+                )
 
             respuestas[id_pregunta] = respuesta
 
-        # Guardamos nuevamente las respuestas en la sesión
+        # Guardamos las respuestas en la sesión
         session["respuestas"] = respuestas
 
         # Si es la última sección
-        if numero == len(SECCIONES):
+        if numero == total_secciones:
 
-            return redirect(url_for("resultados"))
+            return redirect(
+                url_for("resultados")
+            )
 
         # Pasamos a la siguiente sección
         return redirect(
@@ -75,18 +126,29 @@ def seccion(numero):
             )
         )
 
+    # ======================================
+    # MOSTRAR SECCIÓN
+    # ======================================
+
     return render_template(
         "seccion.html",
         seccion=seccion_actual,
         numero=numero,
-        total_secciones=len(SECCIONES)
+        total_secciones=total_secciones
     )
 
+
+# ==========================================
+# RESULTADOS
+# ==========================================
 
 @app.route("/resultados")
 def resultados():
 
-    respuestas = session.get("respuestas", {})
+    respuestas = session.get(
+        "respuestas",
+        {}
+    )
 
     return render_template(
         "resultados.html",
@@ -94,5 +156,10 @@ def resultados():
     )
 
 
+# ==========================================
+# EJECUTAR APLICACIÓN
+# ==========================================
+
 if __name__ == "__main__":
+
     app.run(debug=True)
