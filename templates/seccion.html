@@ -35,7 +35,7 @@
 
                     <div
                         class="progreso-actual"
-                        style="width: {{ (numero / total_secciones) * 100 }}%;">
+                        :style="{ width: ((numero / total_secciones) * 100) + '%' }">
                     </div>
 
                 </div>
