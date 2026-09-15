@@ -1,18 +1,50 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // Descomenta esto cuando tengas el panel de control listo
 
-const dni = ref('')
-const password = ref('')
-const showPassword = ref(false)
+const email = ref('');
+const password = ref('');
+const errorMsg = ref('');
+const loading = ref(false);
+const router = useRouter();
 
-const iniciarSesion = async () => {
-  // Aquí integrarás el fetch hacia la ruta POST de Flask
-  console.log('Intentando iniciar sesión con DNI:', dni.value)
-}
+const handleLogin = async () => {
+  errorMsg.value = '';
+  loading.value = true;
 
-const alternarContrasena = () => {
-  showPassword.value = !showPassword.value
-}
+  try {
+    // Hacemos la petición POST al servidor Flask
+    const response = await fetch('http://127.0.0.1:5000/api/admin/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    });
+
+    // Convertimos la respuesta a JSON
+    const data = await response.json();
+
+    // Si Flask devuelve un error (ej. código 401), lanzamos una excepción
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al iniciar sesión');
+    }
+
+    // Si el login es exitoso, guardamos el token
+    localStorage.setItem('admin_token', data.token);
+    
+    router.push('/panel');
+
+  } catch (error) {
+    // Mostramos el mensaje de error proveniente del backend
+    errorMsg.value = error.message;
+  } finally {
+    loading.value = false; // Desactivamos el estado de carga
+  }
+};
 </script>
 
 <template>
@@ -37,14 +69,14 @@ const alternarContrasena = () => {
       <div class="login-card">
         <h2>Iniciar Sesión</h2>
         
-        <form @submit.prevent="iniciarSesion">
+        <form @submit.prevent="handleLogin">
           <div class="form-group">
-            <label for="dni">DNI</label>
+            <label for="email">Email</label>
             <input 
-              type="text" 
-              id="dni" 
-              v-model="dni" 
-              placeholder="Ingrese su DNI" 
+              type="email" 
+              id="email" 
+              v-model="email" 
+              placeholder="Ingrese su email" 
               required 
             />
           </div>

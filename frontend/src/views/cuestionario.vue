@@ -1,68 +1,58 @@
 <template>
-  <div class="tarjeta" style="max-width: 600px; margin: 40px auto;">
-    <h2>Test de Orientación Vocacional</h2>
-    <p>Responde las siguientes preguntas para descubrir tu perfil académico.</p>
-  </div>
   <div class="questionnaire-wrapper">
-    <div class="questionnaire-card">
+    <div class="questionnaire-container">
       
-      <!-- Barra de progreso y contador -->
-      <div class="header">
-        <span class="progress-text">Pregunta {{ currentIndex + 1 }} de {{ preguntas.length }}</span>
+      <!-- Encabezado fijo con el progreso -->
+      <div class="header-sticky">
+        <div class="progress-info">
+          <span class="progress-text">Completado: {{ answeredCount }} de {{ preguntas.length }}</span>
+          <span v-if="allAnswered" class="ready-text">¡Listo para enviar!</span>
+        </div>
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
         </div>
       </div>
 
-      <!-- Pregunta actual -->
-      <div class="question-container">
-        <h2>{{ currentQuestion.texto }}</h2>
-        
-        <div class="options-list">
-          <label 
-            v-for="(opcion, index) in currentQuestion.opciones" 
-            :key="index"
-            class="option-label"
-            :class="{ 'selected': respuestas[currentQuestion.id] === opcion.valor }"
-          >
-            <input 
-              type="radio" 
-              :name="'pregunta-' + currentQuestion.id" 
-              :value="opcion.valor" 
-              v-model="respuestas[currentQuestion.id]"
-            />
-            {{ opcion.texto }}
-          </label>
+      <!-- Lista de todas las preguntas -->
+      <div class="questions-list">
+        <div 
+          v-for="(pregunta, qIndex) in preguntas" 
+          :key="pregunta.id" 
+          class="question-card"
+        >
+          <h2>{{ qIndex + 1 }}. {{ pregunta.texto }}</h2>
+          
+          <div class="options-list">
+            <label 
+              v-for="(opcion, oIndex) in pregunta.opciones" 
+              :key="oIndex"
+              class="option-label"
+              :class="{ 'selected': respuestas[pregunta.id] === opcion.valor }"
+            >
+              <input 
+                type="radio" 
+                :name="'pregunta-' + pregunta.id" 
+                :value="opcion.valor" 
+                v-model="respuestas[pregunta.id]"
+              />
+              {{ opcion.texto }}
+            </label>
+          </div>
         </div>
       </div>
 
-      <!-- Controles de navegación -->
-      <div class="navigation-buttons">
+      <!-- Botón final -->
+      <div class="submit-section">
         <button 
-          @click="prevQuestion" 
-          :disabled="currentIndex === 0"
-          class="btn-secondary"
-        >
-          Anterior
-        </button>
-        
-        <button 
-          v-if="!isLastQuestion" 
-          @click="nextQuestion" 
-          :disabled="!respuestas[currentQuestion.id]"
-          class="btn-primary"
-        >
-          Siguiente
-        </button>
-
-        <button 
-          v-else 
           @click="submitTest" 
-          :disabled="!respuestas[currentQuestion.id] || isSubmitting"
+          :disabled="!allAnswered || isSubmitting"
           class="btn-success"
         >
-          {{ isSubmitting ? 'Analizando...' : 'Finalizar y Ver Resultado' }}
+          {{ isSubmitting ? 'Analizando respuestas...' : 'Finalizar y Ver Resultado' }}
         </button>
+        <p v-if="!allAnswered" class="warning-text">
+          Debes responder todas las preguntas para continuar.
+        </p>
       </div>
 
     </div>
@@ -75,7 +65,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-// 1. Preguntas simuladas (Mock)
+// Preguntas simuladas
 const preguntas = [
   {
     id: 1,
@@ -106,105 +96,129 @@ const preguntas = [
   }
 ];
 
-// 2. Estado del componente
-const currentIndex = ref(0);
-const respuestas = ref({}); // Guardará { 1: 'A', 2: 'B', ... }
+const respuestas = ref({});
 const isSubmitting = ref(false);
 
-// 3. Propiedades computadas
-const currentQuestion = computed(() => preguntas[currentIndex.value]);
-const isLastQuestion = computed(() => currentIndex.value === preguntas.length - 1);
-const progressPercentage = computed(() => ((currentIndex.value + 1) / preguntas.length) * 100);
+// Calculamos cuántas preguntas tienen respuesta
+const answeredCount = computed(() => Object.keys(respuestas.value).length);
 
-// 4. Métodos de navegación
-const nextQuestion = () => {
-  if (currentIndex.value < preguntas.length - 1) currentIndex.value++;
-};
+// Verificamos si ya se respondieron todas
+const allAnswered = computed(() => answeredCount.value === preguntas.length);
 
-const prevQuestion = () => {
-  if (currentIndex.value > 0) currentIndex.value--;
-};
+// Calculamos el porcentaje para la barra de progreso
+const progressPercentage = computed(() => (answeredCount.value / preguntas.length) * 100);
 
-const submitTest = () => {
+const submitTest = async () => {
   isSubmitting.value = true;
   
-  // Simulamos el envío al backend (Node.js -> Python)
-  setTimeout(() => {
-    console.log("Respuestas enviadas al motor de inferencia:", respuestas.value);
-    // Aquí luego recibiremos el UUID del resultado y redirigiremos
-    alert("¡Test completado! (Aquí se mostrará el resultado en el futuro)");
+  try {
+    // Enviamos las respuestas a Flask
+    const response = await fetch('http://127.0.0.1:5000/api/test/evaluar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(respuestas.value)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error('Hubo un problema al evaluar el test.');
+    }
+
+    // Guardamos el resultado en SessionStorage temporalmente
+    // para que la vista de resultados (ResultView) pueda leerlo
+    sessionStorage.setItem('resultadoVocacional', JSON.stringify(data.resultado));
+
+    // Redirigimos a la pantalla de resultados
+    router.push('/resultado');
+
+  } catch (error) {
+    alert("Ocurrió un error de conexión: " + error.message);
+  } finally {
     isSubmitting.value = false;
-    router.push('/'); // Volvemos al inicio por ahora
-  }, 1500);
+  }
 };
 </script>
 
 <style scoped>
 .questionnaire-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
   background-color: #f4f7f6;
-  padding: 20px;
+  min-height: 100vh;
+  padding: 40px 20px;
+  font-family: Arial, sans-serif;
 }
 
-.questionnaire-card {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  width: 100%;
-  max-width: 600px;
+.questionnaire-container {
+  max-width: 700px;
+  margin: 0 auto;
 }
 
-.header {
-  margin-bottom: 30px;
+/* Encabezado fijo en la parte superior para no perder de vista el progreso */
+.header-sticky {
+  position: sticky;
+  top: 0;
+  background-color: #f4f7f6;
+  padding: 10px 0 20px 0;
+  z-index: 10;
 }
 
-.progress-text {
-  display: block;
+.progress-info {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 10px;
   font-size: 0.9em;
-  color: #666;
   font-weight: bold;
 }
 
+.progress-text { color: #666; }
+.ready-text { color: #28a745; }
+
 .progress-bar {
   width: 100%;
-  height: 8px;
+  height: 10px;
   background-color: #e9ecef;
-  border-radius: 4px;
+  border-radius: 5px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background-color: #007bff;
-  transition: width 0.3s ease;
+  transition: width 0.4s ease;
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Separación entre cada pregunta */
+}
+
+.question-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 h2 {
   color: #333;
-  margin-bottom: 25px;
-  font-size: 1.4em;
-  line-height: 1.4;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.3em;
 }
 
 .options-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .option-label {
-  display: block;
-  padding: 15px 20px;
+  padding: 15px;
   border: 2px solid #e9ecef;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 1.1em;
   color: #444;
 }
 
@@ -220,49 +234,40 @@ h2 {
   color: #0056b3;
 }
 
-/* Ocultamos el radio button por defecto porque ya estilizamos el contenedor */
 .option-label input[type="radio"] {
   display: none;
 }
 
-.navigation-buttons {
-  display: flex;
-  justify-content: space-between;
+.submit-section {
   margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+  text-align: center;
+  padding-bottom: 40px;
 }
-
-button {
-  padding: 12px 25px;
-  border: none;
-  border-radius: 6px;
-  font-size: 1em;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-.btn-secondary:hover:not(:disabled) { background-color: #5a6268; }
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-.btn-primary:hover:not(:disabled) { background-color: #0056b3; }
 
 .btn-success {
   background-color: #28a745;
   color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 1.2em;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 400px;
+  transition: background-color 0.2s;
 }
+
 .btn-success:hover:not(:disabled) { background-color: #218838; }
+
+.btn-success:disabled {
+  background-color: #a5d8ad;
+  cursor: not-allowed;
+}
+
+.warning-text {
+  color: #dc3545;
+  margin-top: 15px;
+  font-size: 0.9em;
+}
 </style>

@@ -2,8 +2,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
-const router = useRouter()
-const reportesRecientes = ref([])
+const email = ref('');
+const password = ref('');
+const errorMsg = ref('');
+const loading = ref(false);
+const router = useRouter();
 
 // Datos simulados de los cuestionarios completados por los estudiantes
 onMounted(() => {
@@ -13,6 +16,34 @@ onMounted(() => {
     { id: 103, estudiante: 'Sofía Ramírez', fecha: '2026-09-04', perfil: 'Humanístico', recomendacion: 'Derecho', afinidad: '91%' }
   ]
 })
+
+const handleLogin = async () => {
+  errorMsg.value = '';
+  loading.value = true;
+
+  try {
+    const response = await fetch('http://127.0.0.1:5000/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.value, password: password.value })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al iniciar sesión');
+    }
+
+    localStorage.setItem('admin_token', data.token);
+    
+    router.push('/panel'); 
+
+  } catch (error) {
+    errorMsg.value = error.message;
+  } finally {
+    loading.value = false;
+  }
+};
 
 const cerrarSesion = () => {
   router.push('/')
